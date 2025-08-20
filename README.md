@@ -35,7 +35,7 @@ Alternatively, refer to the [notebooks README](https://github.com/NVIDIA-AI-Blue
     - [Datasets](#datasets)
 - [Target Audience](#target-audience)
 - [Prerequisites](#prerequisites)
-    - [Quickstart Guide](#quickstart-guide)
+- [Quickstart Guide](#quickstart-guide)
 - [Ethical Considerations](#ethical-considerations)
 - [License](#license)
 - [Terms of Use](#terms-of-use)
@@ -55,13 +55,13 @@ This safety recipe is broken down into four steps, which map to a typical agenti
 
 ## Key Features
 
-- Evaluation pipelines for content safety with [Nemotron Content Safety Dataset V2](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) and [Wildguard](https://huggingface.co/AllanK24/modernbert-Aegis-2.0-Wildguard-Content-Safety) utilizing [NeMo Eval](https://github.com/NVIDIA/NeMo)  
+- Evaluation pipelines for content safety with [Nemotron Content Safety Dataset V2](https://huggingface.co/datasets/nvidia/Aegis-AI-Content-Safety-Dataset-2.0) and [WildGuardMix Dataset](https://huggingface.co/datasets/allenai/wildguardmix) utilizing [NeMo Eval](https://github.com/NVIDIA/NeMo)  
 - Security evaluation pipeline with [NVIDIA garak](https://github.com/NVIDIA/garak)  
 - Dataset blend with 4 datasets and on-policy prompt generation with the target model  
-- Post-training (SFT) with [NeMo Framework RL](https://github.com/NVIDIA/NeMo-RL)   
+- Post-training (SFT) with [NeMo Framework RL](https://github.com/NVIDIA/NeMo-RL)
 - Easy-to-understand safety and security reports  
 - Packaging and deploying the trusted model with NIM  
-- Integrating the [Content Safety NIM](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-content-safety) with [NeMo Guardrails](https://developer.nvidia.com/nemo-guardrails) for inference-time safety
+- Integrating with [NeMo Guardrails](https://developer.nvidia.com/nemo-guardrails) for inference-time safety
 
 ## Minimum System Requirements
 
