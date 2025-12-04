@@ -4,4 +4,8 @@ __pycache__/
 
 # Environment variables
 .env
-.env.* 
+.env.*
+
+# Audit reports (generated artifacts)
+audit_report.txt
+audit_report.json 
