@@ -13,6 +13,7 @@ jobs:
   validate:
     name: Validate Project
     runs-on: ubuntu-latest
+    # Job will fail if validation fails, blocking merges
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

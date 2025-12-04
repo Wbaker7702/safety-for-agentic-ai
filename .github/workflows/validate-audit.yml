@@ -17,6 +17,9 @@ jobs:
   validate-audit:
     name: Validate and Audit Project
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # Required to comment on PRs
     
     steps:
       - name: Checkout code
@@ -59,16 +62,20 @@ jobs:
       - name: Comment PR with results
         if: github.event_name == 'pull_request' && always()
         uses: actions/github-script@v7
+        env:
+          VALIDATION_PASSED: ${{ job.status == 'success' }}
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            const validationPassed = process.env.VALIDATION_PASSED === 'true';
+            
             let report = '## 🔍 Validation and Audit Results\n\n';
             
-            try {
-              const reportText = fs.readFileSync('audit_report.txt', 'utf8');
-              report += '```\n' + reportText + '\n```\n';
-            } catch (error) {
-              report += '⚠️ Could not read audit report file.\n';
+            if (validationPassed) {
+              report += '✅ **All validation checks passed!**\n\n';
+            } else {
+              report += '❌ **Validation checks failed!**\n\n';
             }
             
             try {
@@ -77,23 +84,68 @@ jobs:
               const passed = reportJson.passed_checks;
               const failed = reportJson.failed_checks;
               
-              report += `\n### Summary\n`;
-              report += `- ✅ Passed: ${passed}/${total}\n`;
-              report += `- ❌ Failed: ${failed}/${total}\n`;
+              report += `### Summary\n`;
+              report += `- ✅ Passed: **${passed}**/${total}\n`;
+              report += `- ❌ Failed: **${failed}**/${total}\n\n`;
               
               if (failed > 0) {
-                report += `\n### Errors\n`;
+                report += `### ❌ Errors\n`;
                 reportJson.errors.forEach(error => {
-                  report += `- ❌ ${error}\n`;
+                  report += `- ${error}\n`;
                 });
+                report += `\n`;
               }
+              
+              // Add detailed results
+              report += `### Detailed Results\n\n`;
+              for (const [checkName, result] of Object.entries(reportJson.results)) {
+                const status = result.passed ? '✅' : '❌';
+                report += `${status} **${checkName}**: ${result.message}\n`;
+              }
+              
+              // Add link to full report
+              report += `\n---\n`;
+              report += `📄 Full audit report available in workflow artifacts.\n`;
+              
             } catch (error) {
               report += '⚠️ Could not parse JSON report.\n';
+              report += `Error: ${error.message}\n`;
+              
+              // Try to read text report as fallback
+              try {
+                const reportText = fs.readFileSync('audit_report.txt', 'utf8');
+                report += `\n\`\`\`\n${reportText}\n\`\`\`\n`;
+              } catch (e) {
+                report += '⚠️ Could not read audit report file.\n';
+              }
             }
             
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            // Find existing comment to update or create new one
+            const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: report
+              issue_number: context.issue.number,
             });
+            
+            const botComment = comments.data.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🔍 Validation and Audit Results')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: report
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }
