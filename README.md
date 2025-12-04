@@ -117,6 +117,23 @@ This safety recipe is broken down into four steps, which map to a typical agenti
 - A [personal NVIDIA API key](https://org.ngc.nvidia.com/setup/api-keys) with the `NGC catalog` and `Public API Endpoints` services selected.
 - A [Hugging Face token](https://huggingface.co/settings/tokens) so that you can download models and datasets from the hub.
 
+## Continuous Integration
+
+This project includes automated validation and audit workflows that run on every push and pull request:
+
+- **Validation**: Checks project structure, dependencies, configurations, and code quality
+- **Audit Reports**: Generated for each run and available as workflow artifacts
+- **PR Comments**: Automatic comments on pull requests with validation results
+
+See [`.github/workflows/README.md`](.github/workflows/README.md) for more details.
+
+To run validation locally:
+```bash
+make validate
+# or
+python3 scripts/validate_audit.py
+```
+
 ## Quickstart Guide
 
 Run the following notebooks:

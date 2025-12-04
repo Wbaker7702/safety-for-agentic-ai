@@ -119,61 +119,70 @@ class ProjectValidator:
             )
         
         try:
-            import tomli
-            with open(pyproject_path, 'rb') as f:
-                pyproject = tomli.load(f)
+            # Try tomli first (Python 3.11+), then tomli-w, then fallback
+            try:
+                import tomli as tomllib
+            except ImportError:
+                try:
+                    import tomli_w as tomllib
+                except ImportError:
+                    tomllib = None
             
-            dependencies = pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})
-            
-            if not dependencies:
+            if tomllib:
+                with open(pyproject_path, 'rb') as f:
+                    pyproject = tomllib.load(f)
+                
+                dependencies = pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})
+                
+                if not dependencies:
+                    return ValidationResult(
+                        passed=False,
+                        message="No dependencies found in pyproject.toml"
+                    )
+                
+                required_deps = [
+                    "garak",
+                    "huggingface_hub",
+                    "vllm",
+                    "datasets",
+                    "wildguard",
+                ]
+                
+                missing_deps = []
+                for dep in required_deps:
+                    if dep not in dependencies:
+                        missing_deps.append(dep)
+                
+                if missing_deps:
+                    return ValidationResult(
+                        passed=False,
+                        message=f"Missing required dependencies: {', '.join(missing_deps)}",
+                        details={"missing": missing_deps, "total": len(dependencies)}
+                    )
+                
                 return ValidationResult(
-                    passed=False,
-                    message="No dependencies found in pyproject.toml"
+                    passed=True,
+                    message=f"All required dependencies present ({len(required_deps)} checked, {len(dependencies)} total)",
+                    details={"total_dependencies": len(dependencies)}
                 )
-            
-            required_deps = [
-                "garak",
-                "huggingface_hub",
-                "vllm",
-                "datasets",
-                "wildguard",
-            ]
-            
-            missing_deps = []
-            for dep in required_deps:
-                if dep not in dependencies:
-                    missing_deps.append(dep)
-            
-            if missing_deps:
+            else:
+                # Fallback: try to parse manually
+                with open(pyproject_path, 'r') as f:
+                    content = f.read()
+                
+                required_deps = ["garak", "huggingface_hub", "vllm", "datasets", "wildguard"]
+                missing_deps = [dep for dep in required_deps if dep not in content]
+                
+                if missing_deps:
+                    return ValidationResult(
+                        passed=False,
+                        message=f"Could not parse pyproject.toml properly. Missing deps: {', '.join(missing_deps)}"
+                    )
+                
                 return ValidationResult(
-                    passed=False,
-                    message=f"Missing required dependencies: {', '.join(missing_deps)}",
-                    details={"missing": missing_deps, "total": len(dependencies)}
+                    passed=True,
+                    message="Dependencies found in pyproject.toml (basic string check)"
                 )
-            
-            return ValidationResult(
-                passed=True,
-                message=f"All required dependencies present ({len(required_deps)} checked, {len(dependencies)} total)",
-                details={"total_dependencies": len(dependencies)}
-            )
-        except ImportError:
-            # Fallback: try to parse manually
-            with open(pyproject_path, 'r') as f:
-                content = f.read()
-            
-            required_deps = ["garak", "huggingface_hub", "vllm", "datasets", "wildguard"]
-            missing_deps = [dep for dep in required_deps if dep not in content]
-            
-            if missing_deps:
-                return ValidationResult(
-                    passed=False,
-                    message=f"Could not parse pyproject.toml properly. Missing deps: {', '.join(missing_deps)}"
-                )
-            
-            return ValidationResult(
-                passed=True,
-                message="Dependencies found in pyproject.toml (basic check)"
-            )
         except Exception as e:
             return ValidationResult(
                 passed=False,

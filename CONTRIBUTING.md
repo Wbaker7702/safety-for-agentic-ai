@@ -1,50 +1,85 @@
+# Contributing to Safety for Agentic AI
 
-# Contribution Rules
+Thank you for your interest in contributing! This document provides guidelines and instructions for contributing to this project.
 
-## Issue Tracking & Pull Requests
+## Development Setup
 
-* All enhancement, bugfix, or change requests must begin with the creation of a [Issue Request](https://github.com/nvidia/When2Call/issues) or [Pull Requests](https://github.com/nvidia/When2Call/pulls)
+1. Clone the repository
+2. Install dependencies (see main README)
+3. Run validation to ensure your environment is set up correctly:
+   ```bash
+   make validate
+   ```
 
+## Code Quality and Validation
 
-## Signing Your Work
+Before submitting a pull request, please ensure:
 
-* We require that all contributors "sign-off" on their commits. This certifies that the contribution is your original work, or you have rights to submit it under the same license, or a compatible license.
+1. **Run validation locally:**
+   ```bash
+   make validate
+   # or
+   python3 scripts/validate_audit.py
+   ```
 
-  * Any contribution which contains commits that are not Signed-Off will not be accepted.
+2. **All validation checks pass:**
+   - Project structure is correct
+   - Python dependencies are valid
+   - Docker Compose files are valid
+   - YAML configurations are valid
+   - Python syntax is correct
+   - Required files are present
+   - Script permissions are correct
 
-* To sign off on a commit you simply use the `--signoff` (or `-s`) option when committing your changes:
-  ```bash
-  $ git commit -s -m "Add cool feature."
-  ```
-  This will append the following to your commit message:
-  ```
-  Signed-off-by: Your Name <your@email.com>
-  ```
+3. **Code follows project conventions:**
+   - Python code follows PEP 8 style guidelines
+   - YAML files are properly formatted
+   - Shell scripts have execute permissions
 
-* Full text of the DCO:
+## Pre-commit Hooks
 
-  ```
-    Developer Certificate of Origin
-    Version 1.1
-    
-    Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
-    1 Letterman Drive
-    Suite D4700
-    San Francisco, CA, 94129
-    
-    Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.
-  ```
+A pre-commit hook is available to automatically run validation before commits. To enable it:
 
-  ```
-    Developer's Certificate of Origin 1.1
-    
-    By making a contribution to this project, I certify that:
-    
-    (a) The contribution was created in whole or in part by me and I have the right to submit it under the open source license indicated in the file; or
-    
-    (b) The contribution is based upon previous work that, to the best of my knowledge, is covered under an appropriate open source license and I have the right under that license to submit that work with modifications, whether created in whole or in part by me, under the same open source license (unless I am permitted to submit under a different license), as indicated in the file; or
-    
-    (c) The contribution was provided directly to me by some other person who certified (a), (b) or (c) and I have not modified it.
-    
-    (d) I understand and agree that this project and the contribution are public and that a record of the contribution (including all personal information I submit with it, including my sign-off) is maintained indefinitely and may be redistributed consistent with this project or the open source license(s) involved.
-  ```
+```bash
+chmod +x .git/hooks/pre-commit
+```
+
+The hook will run validation automatically before each commit. If validation fails, the commit will be blocked.
+
+## Pull Request Process
+
+1. Create a feature branch from `main`
+2. Make your changes
+3. Run validation: `make validate`
+4. Ensure all tests pass
+5. Submit a pull request
+
+The CI/CD pipeline will automatically:
+- Run validation checks
+- Generate audit reports
+- Comment on your PR with results
+
+## CI/CD Integration
+
+This project uses GitHub Actions for continuous integration:
+
+- **On every push**: Validation runs automatically
+- **On pull requests**: Full validation suite runs and results are posted as comments
+- **Daily**: Scheduled validation runs to catch regressions
+
+See [`.github/workflows/README.md`](.github/workflows/README.md) for more details.
+
+## Reporting Issues
+
+If you find a bug or have a suggestion:
+
+1. Check existing issues first
+2. Create a new issue with:
+   - Clear description
+   - Steps to reproduce (if applicable)
+   - Expected vs actual behavior
+   - Environment details
+
+## Questions?
+
+Feel free to open an issue or discussion for any questions about contributing.
